@@ -5,7 +5,6 @@ import { LoginPage } from "./pages/LoginPage.jsx";
 import { AdminDashboard } from "./pages/dashboards/AdminDashboard.jsx";
 import { UserDashboard } from "./pages/dashboards/UserDashboard.jsx";
 import { MaintenanceHome } from "./pages/maintenance/MaintenanceHome.jsx";
-import { MembershipPage } from "./pages/maintenance/MembershipPage.jsx";
 import { BookPage } from "./pages/maintenance/BookPage.jsx";
 import { UserManagementPage } from "./pages/maintenance/UserManagementPage.jsx";
 import { TransactionsHome } from "./pages/transactions/TransactionsHome.jsx";
@@ -24,7 +23,6 @@ export default function App() {
 
           <Route element={<ProtectedRoute allowRoles={["admin"]} />}>
             <Route path="/maintenance" element={<MaintenanceHome />} />
-            <Route path="/maintenance/memberships" element={<MembershipPage />} />
             <Route path="/maintenance/books" element={<BookPage />} />
             <Route path="/maintenance/users" element={<UserManagementPage />} />
           </Route>

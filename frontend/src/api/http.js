@@ -7,14 +7,18 @@ export const http = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
-export const attachAuthInterceptor = (getToken) => {
-  http.interceptors.request.use((config) => {
-    const token = getToken?.();
-    if (token) {
-      config.headers = config.headers || {};
-      config.headers.Authorization = `Bearer ${token}`;
+http.interceptors.request.use((config) => {
+  try {
+    const raw = localStorage.getItem("lms_auth");
+    if (raw) {
+      const auth = JSON.parse(raw);
+      if (auth?.token) {
+        config.headers.Authorization = `Bearer ${auth.token}`;
+      }
     }
-    return config;
-  });
-};
+  } catch (e) {
+    // Ignore storage errors
+  }
+  return config;
+});
 

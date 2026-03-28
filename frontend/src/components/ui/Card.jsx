@@ -1,11 +1,11 @@
-export const Card = ({ title, subtitle, children, right }) => {
+export const Card = ({ title, subtitle, children, right, className = "" }) => {
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white shadow-sm">
+    <div className={`overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl ${className}`}>
       {(title || subtitle || right) && (
-        <div className="flex items-start justify-between gap-4 border-b border-gray-100 px-5 py-4">
+        <div className="flex items-start justify-between gap-4 border-b border-white/5 px-5 py-4">
           <div>
-            {title ? <h2 className="text-base font-semibold text-gray-900">{title}</h2> : null}
-            {subtitle ? <p className="mt-1 text-sm text-gray-600">{subtitle}</p> : null}
+            {title ? <h2 className="text-base font-bold tracking-tight text-white">{title}</h2> : null}
+            {subtitle ? <p className="mt-1 text-sm text-slate-400">{subtitle}</p> : null}
           </div>
           {right ? <div>{right}</div> : null}
         </div>

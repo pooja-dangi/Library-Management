@@ -1,10 +1,10 @@
 export const Alert = ({ variant = "info", children }) => {
   const styles = {
-    info: "border-blue-200 bg-blue-50 text-blue-900",
-    error: "border-rose-200 bg-rose-50 text-rose-900",
-    success: "border-emerald-200 bg-emerald-50 text-emerald-900",
-    warn: "border-amber-200 bg-amber-50 text-amber-900",
+    info: "bg-blue-500/10 text-blue-300 border-blue-500/20",
+    success: "bg-emerald-500/10 text-emerald-300 border-emerald-500/20",
+    warn: "bg-amber-500/10 text-amber-300 border-amber-500/20",
+    error: "bg-rose-500/10 text-rose-300 border-rose-500/20",
   };
-  return <div className={`rounded-xl border px-4 py-3 text-sm ${styles[variant]}`}>{children}</div>;
+  return <div className={`rounded-xl border px-4 py-3 text-sm font-medium backdrop-blur-md ${styles[variant] || styles.info}`}>{children}</div>;
 };
 

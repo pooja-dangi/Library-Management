@@ -31,6 +31,15 @@ export const BookPage = () => {
 
   const selected = useMemo(() => rows.find((r) => r._id === selectedId) || null, [rows, selectedId]);
 
+  const fetchNextId = async () => {
+    try {
+      const { data } = await http.get("/books/next-id");
+      setForm((p) => ({ ...p, serialNumber: data.nextId }));
+    } catch (e) {
+      console.error("Failed to fetch next ID", e);
+    }
+  };
+
   const load = async () => {
     setApiError("");
     try {
@@ -46,10 +55,16 @@ export const BookPage = () => {
 
   useEffect(() => {
     load();
+    fetchNextId();
   }, []);
 
   useEffect(() => {
-    if (!selected) return;
+    if (!selected) {
+      if (selectedId === "" && form.name === "") {
+        fetchNextId();
+      }
+      return;
+    }
     setForm({
       type: selected.type || "book",
       name: selected.name || "",
@@ -88,6 +103,7 @@ export const BookPage = () => {
       setSelectedId("");
       setForm(blank);
       await load();
+      await fetchNextId();
     } catch (err) {
       setApiError(getApiErrorMessage(err));
     } finally {
@@ -97,13 +113,14 @@ export const BookPage = () => {
 
   const onDelete = async () => {
     if (!selectedId) return;
-    if (!confirm("Delete this book/movie?")) return;
+    if (!confirm("Delete this book?")) return;
     try {
       setSaving(true);
       await http.delete(`/books/${selectedId}`);
       setSelectedId("");
       setForm(blank);
       await load();
+      await fetchNextId();
     } catch (err) {
       setApiError(getApiErrorMessage(err));
     } finally {
@@ -125,10 +142,9 @@ export const BookPage = () => {
         />
       ),
     },
-    { key: "type", header: "Type" },
+    { key: "serialNumber", header: "Book ID" },
     { key: "name", header: "Name" },
     { key: "author", header: "Author" },
-    { key: "serialNumber", header: "Serial No" },
     { key: "quantity", header: "Qty" },
     { key: "status", header: "Status" },
   ];
@@ -136,25 +152,21 @@ export const BookPage = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-gray-900">Book/Movie Management</h1>
-        <p className="mt-1 text-sm text-gray-600">Add or update books/movies. All fields required.</p>
+        <h1 className="text-2xl font-semibold text-gray-900">Book Management</h1>
+        <p className="mt-1 text-sm text-gray-600">Add or update library books. All fields required.</p>
       </div>
 
       {apiError ? <Alert variant="error">{apiError}</Alert> : null}
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <Card title={selectedId ? "Update Book/Movie" : "Add Book/Movie"}>
+        <Card title={selectedId ? "Update Book" : "Add Book"}>
           <form onSubmit={onSubmit} className="space-y-4">
-            <RadioGroup
-              label="Type"
-              name="type"
-              value={form.type}
+            <Input
+              label="Book ID"
+              name="serialNumber"
+              value={form.serialNumber}
               onChange={onChange}
-              error={errors.type}
-              options={[
-                { value: "book", label: "Book" },
-                { value: "movie", label: "Movie" },
-              ]}
+              error={errors.serialNumber}
             />
             <Input label="Name" name="name" value={form.name} onChange={onChange} error={errors.name} />
             <Input label="Author" name="author" value={form.author} onChange={onChange} error={errors.author} />
@@ -176,13 +188,6 @@ export const BookPage = () => {
                 error={errors.quantity}
               />
             </div>
-            <Input
-              label="Serial Number"
-              name="serialNumber"
-              value={form.serialNumber}
-              onChange={onChange}
-              error={errors.serialNumber}
-            />
             <Select
               label="Status"
               name="status"
@@ -205,6 +210,7 @@ export const BookPage = () => {
                   setSelectedId("");
                   setForm(blank);
                   setErrors({});
+                  fetchNextId();
                 }}
               >
                 Cancel
@@ -223,11 +229,12 @@ export const BookPage = () => {
           </form>
         </Card>
 
-        <Card title="Books/Movies" subtitle="Select a row to update">
+        <Card title="Books" subtitle="Select a row to update">
           {loading ? <Spinner /> : <Table columns={cols} rows={rows} rowKey={(r) => r._id} />}
         </Card>
       </div>
     </div>
   );
 };
+
 

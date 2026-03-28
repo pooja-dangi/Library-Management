@@ -19,6 +19,7 @@ const addDays = (iso, days) => {
 
 export const TransactionsHome = () => {
   const [books, setBooks] = useState([]);
+  const [users, setUsers] = useState([]);
   const [loadingBooks, setLoadingBooks] = useState(false);
   const [apiError, setApiError] = useState("");
 
@@ -33,6 +34,7 @@ export const TransactionsHome = () => {
   const today = toISODate(new Date());
   const [issueForm, setIssueForm] = useState({
     bookId: "",
+    userId: "",
     issueDate: today,
     returnDate: addDays(today, 15),
     remarks: "",
@@ -75,6 +77,15 @@ export const TransactionsHome = () => {
     }
   };
 
+  const loadUsers = async () => {
+    try {
+      const { data } = await http.get("/users");
+      setUsers(data.filter((u) => u.role === "user"));
+    } catch (e) {
+      console.error("Failed to load users", e);
+    }
+  };
+
   const loadTransactions = async () => {
     try {
       setTxLoading(true);
@@ -89,6 +100,7 @@ export const TransactionsHome = () => {
 
   useEffect(() => {
     loadBooks();
+    loadUsers();
     loadTransactions();
   }, []);
 
@@ -114,6 +126,7 @@ export const TransactionsHome = () => {
   const validateIssue = () => {
     const next = {};
     if (!issueForm.bookId) next.bookId = "Required";
+    if (!issueForm.userId) next.userId = "Required";
     if (!issueForm.issueDate) next.issueDate = "Required";
     if (!issueForm.returnDate) next.returnDate = "Required";
     if (issueForm.issueDate && issueForm.issueDate > today) next.issueDate = "Cannot be future";
@@ -134,7 +147,7 @@ export const TransactionsHome = () => {
       await http.post("/transactions/issue", issueForm);
       await loadBooks();
       await loadTransactions();
-      setIssueForm({ bookId: "", issueDate: today, returnDate: addDays(today, 15), remarks: "" });
+      setIssueForm({ bookId: "", userId: "", issueDate: today, returnDate: addDays(today, 15), remarks: "" });
     } catch (e2) {
       setApiError(getApiErrorMessage(e2));
     } finally {
@@ -205,8 +218,8 @@ export const TransactionsHome = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-gray-900">Transactions</h1>
-        <p className="mt-1 text-sm text-gray-600">Check availability, issue, return, and fine payment.</p>
+        <h1 className="text-2xl font-bold text-white">Transactions</h1>
+        <p className="mt-1 text-sm text-slate-400">Check availability, issue, return, and fine payment.</p>
       </div>
 
       {apiError ? <Alert variant="error">{apiError}</Alert> : null}
@@ -248,11 +261,21 @@ export const TransactionsHome = () => {
               onChange={(e) => setIssueForm((p) => ({ ...p, bookId: e.target.value }))}
               error={issueErrors.bookId}
               options={[
-                { value: "", label: "Select", disabled: false },
                 ...books.map((b) => ({ value: b._id, label: `${b.name} (${b.serialNumber})` })),
               ]}
             />
             <Input label="Author" name="author" value={selectedBook?.author || ""} disabled />
+            <Select
+              label="Borrower (User)"
+              name="userId"
+              value={issueForm.userId}
+              onChange={(e) => setIssueForm((p) => ({ ...p, userId: e.target.value }))}
+              error={issueErrors.userId}
+              options={[
+                { value: "", label: "Select User", disabled: false },
+                ...users.map((u) => ({ value: u._id, label: `${u.name} (${u.userId})` })),
+              ]}
+            />
             <div className="grid gap-4 md:grid-cols-2">
               <Input
                 label="Issue Date"
@@ -277,7 +300,7 @@ export const TransactionsHome = () => {
             <Input label="Remarks (optional)" name="remarks" value={issueForm.remarks} onChange={(e) => setIssueForm((p) => ({ ...p, remarks: e.target.value }))} />
 
             <div className="flex items-center justify-between gap-3 pt-2">
-              <Button variant="secondary" disabled={issueSaving} onClick={() => setIssueForm({ bookId: "", issueDate: today, returnDate: addDays(today, 15), remarks: "" })}>
+              <Button variant="secondary" disabled={issueSaving} onClick={() => setIssueForm({ bookId: "", userId: "", issueDate: today, returnDate: addDays(today, 15), remarks: "" })}>
                 Cancel
               </Button>
               <Button type="submit" disabled={issueSaving}>
@@ -303,7 +326,7 @@ export const TransactionsHome = () => {
                   { value: "", label: "Select", disabled: false },
                   ...issuedTx.map((t) => ({
                     value: t._id,
-                    label: `${t.bookId?.name} (${t.bookId?.serialNumber}) - due ${t.returnDate?.slice(0, 10)}`,
+                    label: `${t.bookId?.name} (${t.bookId?.serialNumber}) - ${t.userId?.name} (${t.userId?.userId}) - due ${t.returnDate?.slice(0, 10)}`,
                   })),
                 ]}
               />
@@ -325,6 +348,9 @@ export const TransactionsHome = () => {
               <div className="grid gap-3 rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-800">
                 <p>
                   <span className="font-semibold">Book</span>: {returnedTx.bookId?.name} ({returnedTx.bookId?.serialNumber})
+                </p>
+                <p>
+                  <span className="font-semibold">Borrower</span>: {returnedTx.userId?.name} ({returnedTx.userId?.userId})
                 </p>
                 <p>
                   <span className="font-semibold">Author</span>: {returnedTx.bookId?.author}

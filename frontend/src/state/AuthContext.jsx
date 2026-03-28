@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { http, attachAuthInterceptor } from "../api/http";
+import { http } from "../api/http";
 
 const AuthContext = createContext(null);
 
@@ -16,10 +16,6 @@ export const AuthProvider = ({ children }) => {
   });
 
   const token = auth?.token || null;
-
-  useEffect(() => {
-    attachAuthInterceptor(() => token);
-  }, [token]);
 
   useEffect(() => {
     if (auth) localStorage.setItem(LS_KEY, JSON.stringify(auth));

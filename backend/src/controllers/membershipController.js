@@ -77,3 +77,28 @@ export const deleteMembership = async (req, res) => {
   res.json({ message: "Membership deleted" });
 };
 
+export const getNextMemberId = async (req, res) => {
+  try {
+    // Find the latest memberId
+    const last = await Membership.findOne().sort({ memberId: -1 });
+    if (!last) return res.json({ nextId: "M0001" });
+
+    // Match prefix and number
+    const match = last.memberId.match(/^([a-zA-Z]+)(\d+)$/);
+    if (!match) {
+      // If it doesn't match the standard format, just increment the number?
+      // Or default to M0001
+      return res.json({ nextId: "M0001" });
+    }
+
+    const prefix = match[1];
+    const numStr = match[2];
+    const nextNum = parseInt(numStr, 10) + 1;
+    const paddedNum = String(nextNum).padStart(numStr.length, "0");
+
+    res.json({ nextId: `${prefix}${paddedNum}` });
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+

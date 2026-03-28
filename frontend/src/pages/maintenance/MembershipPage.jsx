@@ -32,6 +32,15 @@ export const MembershipPage = () => {
 
   const selected = useMemo(() => rows.find((r) => r._id === selectedId) || null, [rows, selectedId]);
 
+  const fetchNextId = async () => {
+    try {
+      const { data } = await http.get("/memberships/next-id");
+      setForm((p) => ({ ...p, memberId: data.nextId }));
+    } catch (e) {
+      console.error("Failed to fetch next ID", e);
+    }
+  };
+
   const load = async () => {
     setApiError("");
     try {
@@ -47,10 +56,17 @@ export const MembershipPage = () => {
 
   useEffect(() => {
     load();
+    fetchNextId();
   }, []);
 
   useEffect(() => {
-    if (!selected) return;
+    if (!selected) {
+      // If we deselected, fetch a fresh nextId
+      if (selectedId === "" && form.name === "") {
+         fetchNextId();
+      }
+      return;
+    }
     setForm({
       memberId: selected.memberId || "",
       name: selected.name || "",
@@ -86,6 +102,7 @@ export const MembershipPage = () => {
       setSelectedId("");
       setForm(blank);
       await load();
+      await fetchNextId(); // Get next one after saving
     } catch (err) {
       setApiError(getApiErrorMessage(err));
     } finally {
@@ -102,6 +119,7 @@ export const MembershipPage = () => {
       setSelectedId("");
       setForm(blank);
       await load();
+      await fetchNextId();
     } catch (err) {
       setApiError(getApiErrorMessage(err));
     } finally {
@@ -205,6 +223,7 @@ export const MembershipPage = () => {
                   setSelectedId("");
                   setForm(blank);
                   setErrors({});
+                  fetchNextId();
                 }}
               >
                 Cancel
@@ -230,4 +249,5 @@ export const MembershipPage = () => {
     </div>
   );
 };
+
 

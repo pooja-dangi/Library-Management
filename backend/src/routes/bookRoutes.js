@@ -6,13 +6,14 @@ import {
   getBookById,
   getBooks,
   updateBook,
+  getNextBookId,
 } from "../controllers/bookController.js";
 import { adminOnly, protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
 const bookValidation = [
-  body("type").isIn(["book", "movie"]).withMessage("type must be book/movie"),
+  body("type").isIn(["book"]).withMessage("type must be book"),
   body("name").notEmpty().withMessage("name is required"),
   body("author").notEmpty().withMessage("author is required"),
   body("serialNumber").notEmpty().withMessage("serialNumber is required"),
@@ -27,6 +28,7 @@ router.use(protect);
 
 // Admin maintenance CRUD
 router.get("/", getBooks); // allow users to list for dropdowns
+router.get("/next-id", adminOnly, getNextBookId);
 router.get("/:id", getBookById);
 router.post("/", adminOnly, bookValidation, createBook);
 router.put("/:id", adminOnly, bookValidation, updateBook);

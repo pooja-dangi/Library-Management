@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const bookSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
-    type: { type: String, enum: ["book", "movie"], default: "book" },
+    type: { type: String, enum: ["book"], default: "book" },
     author: { type: String, required: true },
     serialNumber: { type: String, required: true, unique: true },
     status: {

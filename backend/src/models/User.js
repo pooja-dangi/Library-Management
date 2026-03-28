@@ -7,6 +7,14 @@ const userSchema = new mongoose.Schema(
     userId: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     role: { type: String, enum: ["admin", "user"], default: "user" },
+    contact: { type: String },
+    aadhaar: { type: String },
+    startDate: { type: Date },
+    endDate: { type: Date },
+    membershipType: {
+      type: String,
+      enum: ["6_months", "1_year", "2_years"],
+    },
     isActive: { type: Boolean, default: true },
   },
   { timestamps: true }

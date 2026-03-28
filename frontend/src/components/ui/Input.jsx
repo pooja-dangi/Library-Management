@@ -9,9 +9,9 @@ export const Input = ({
   disabled,
 }) => {
   return (
-    <div className="space-y-1">
+    <div className="space-y-1.5">
       {label ? (
-        <label className="block text-sm font-medium text-gray-700" htmlFor={name}>
+        <label className="block text-sm font-semibold text-slate-300" htmlFor={name}>
           {label}
         </label>
       ) : null}
@@ -23,11 +23,11 @@ export const Input = ({
         onChange={onChange}
         placeholder={placeholder}
         disabled={disabled}
-        className={`w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-600 disabled:bg-gray-50 ${
-          error ? "border-rose-500" : "border-gray-300"
+        className={`w-full rounded-xl border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white outline-none transition-all placeholder:text-slate-500 focus:border-indigo-500 focus:bg-white/10 focus:ring-4 focus:ring-indigo-500/20 disabled:opacity-50 ${
+          error ? "border-rose-500 ring-4 ring-rose-500/20" : "border-white/10"
         }`}
       />
-      {error ? <p className="text-xs text-rose-600">{error}</p> : null}
+      {error ? <p className="text-xs font-medium text-rose-400">{error}</p> : null}
     </div>
   );
 };

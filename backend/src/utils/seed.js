@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import connectDB from "../config/db.js";
 import User from "../models/User.js";
 import Book from "../models/Book.js";
-import Membership from "../models/Membership.js";
+import Transaction from "../models/Transaction.js";
 
 dotenv.config();
 
@@ -11,7 +11,7 @@ const run = async () => {
   await connectDB();
 
   console.log("Seeding data...");
-  await Promise.all([User.deleteMany({}), Book.deleteMany({}), Membership.deleteMany({})]);
+  await Promise.all([User.deleteMany({}), Book.deleteMany({}), Transaction.deleteMany({})]);
 
   const admin = await User.create({
     name: "Admin",
@@ -22,25 +22,17 @@ const run = async () => {
   });
 
   const user = await User.create({
-    name: "User One",
+    name: "Ravi Kumar",
     userId: "user001",
     password: "User@123",
     role: "user",
     isActive: true,
+    contact: "9999999999",
+    aadhaar: "1234-5678-9012",
+    startDate: new Date(),
+    endDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+    membershipType: "1_year",
   });
-
-  await Membership.create([
-    {
-      memberId: "M0001",
-      name: "Ravi Kumar",
-      contact: "9999999999",
-      aadhaar: "1234-5678-9012",
-      startDate: new Date(),
-      endDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
-      membershipType: "1_year",
-      status: "active",
-    },
-  ]);
 
   await Book.create([
     {
@@ -62,10 +54,10 @@ const run = async () => {
       procurementDate: new Date("2024-02-20"),
     },
     {
-      name: "Inception",
-      type: "movie",
-      author: "Christopher Nolan",
-      serialNumber: "M-2001",
+      name: "The Art of Unit Testing",
+      type: "book",
+      author: "Roy Osherove",
+      serialNumber: "B-1003",
       status: "available",
       quantity: 1,
       procurementDate: new Date("2023-11-05"),

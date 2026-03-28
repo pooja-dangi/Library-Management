@@ -35,7 +35,7 @@ export const issueBook = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
-  const { bookId, issueDate, returnDate, remarks } = req.body;
+  const { bookId, userId, issueDate, returnDate, remarks } = req.body;
 
   const book = await Book.findById(bookId);
   if (!book) return res.status(404).json({ message: "Book not found" });
@@ -55,7 +55,7 @@ export const issueBook = async (req, res) => {
   }
 
   const tx = await Transaction.create({
-    userId: req.user._id,
+    userId,
     bookId: book._id,
     issueDate: issue,
     returnDate: ret,
@@ -78,7 +78,7 @@ export const requestIssue = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
-  const { bookId, issueDate, returnDate } = req.body;
+  const { bookId, userId, issueDate, returnDate } = req.body;
 
   const book = await Book.findById(bookId);
   if (!book) return res.status(404).json({ message: "Book not found" });
@@ -93,7 +93,7 @@ export const requestIssue = async (req, res) => {
   }
 
   const tx = await Transaction.create({
-    userId: req.user._id,
+    userId,
     bookId: book._id,
     issueDate: issue,
     returnDate: ret,
@@ -136,8 +136,8 @@ export const returnBook = async (req, res) => {
     return res.status(400).json({ message: "Transaction not in issued state" });
   }
 
-  // Admin can return any; user can return own
-  if (req.user.role !== "admin" && String(tx.userId) !== String(req.user._id)) {
+  // Admin can return any
+  if (req.user.role !== "admin") {
     return res.status(403).json({ message: "Not allowed" });
   }
 
@@ -167,7 +167,7 @@ export const payFine = async (req, res) => {
   const tx = await Transaction.findById(transactionId).populate("bookId", "name author serialNumber type");
   if (!tx) return res.status(404).json({ message: "Transaction not found" });
 
-  if (req.user.role !== "admin" && String(tx.userId) !== String(req.user._id)) {
+  if (req.user.role !== "admin") {
     return res.status(403).json({ message: "Not allowed" });
   }
 
@@ -184,10 +184,10 @@ export const payFine = async (req, res) => {
 };
 
 export const listMyTransactions = async (req, res) => {
-  const filter = req.user.role === "admin" ? {} : { userId: req.user._id };
+  const filter = {}; // Admin sees all; User-specific view disabled for now due to model switch
   const txs = await Transaction.find(filter)
     .populate("bookId", "name author serialNumber type")
-    .populate("userId", "name userId role")
+    .populate("userId", "name userId contact")
     .sort({ createdAt: -1 });
   res.json(txs);
 };

@@ -10,6 +10,7 @@ export const LoginPage = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({ userId: "", password: "" });
+  const [activeTab, setActiveTab] = useState("user"); // "user" or "admin"
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState("");
@@ -31,6 +32,10 @@ export const LoginPage = () => {
     try {
       setLoading(true);
       const data = await login(form);
+      
+      // Basic check: if they logged in with the wrong role tab?
+      // For now, we allow it but we redirect based on the ACTUAL role.
+      // But it's better to stay on the correct dashboard.
       navigate(data.role === "admin" ? "/admin" : "/user", { replace: true });
     } catch (err) {
       setApiError(err?.response?.data?.message || "Login failed");
@@ -40,49 +45,104 @@ export const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="mx-auto flex min-h-screen max-w-6xl items-center justify-center px-4">
-        <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-          <div className="mb-6">
-            <h1 className="text-xl font-semibold text-gray-900">Login</h1>
-            <p className="mt-1 text-sm text-gray-600">Sign in with User ID and Password</p>
+    <div className="relative min-h-screen overflow-hidden bg-slate-950">
+      {/* Background blobs for cinematic effect */}
+      <div className="absolute -top-[10%] -left-[10%] h-[40%] w-[40%] rounded-full bg-indigo-600/20 blur-[120px]" />
+      <div className="absolute -bottom-[10%] -right-[10%] h-[40%] w-[40%] rounded-full bg-blue-600/20 blur-[120px]" />
+
+      <div className="relative mx-auto flex min-h-screen max-w-6xl items-center justify-center px-4">
+        <div className="w-full max-w-md overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-2xl backdrop-blur-2xl">
+          {/* Tabs */}
+          <div className="flex border-b border-white/5">
+            <button
+              onClick={() => setActiveTab("user")}
+              className={`flex-1 py-5 text-center text-xs font-bold uppercase tracking-widest transition-all ${
+                activeTab === "user"
+                  ? "border-b-2 border-indigo-500 bg-indigo-500/10 text-indigo-400"
+                  : "text-slate-500 hover:bg-white/5 hover:text-white"
+              }`}
+            >
+              User Access
+            </button>
+            <button
+              onClick={() => setActiveTab("admin")}
+              className={`flex-1 py-5 text-center text-xs font-bold uppercase tracking-widest transition-all ${
+                activeTab === "admin"
+                  ? "border-b-2 border-violet-500 bg-violet-500/10 text-violet-400"
+                  : "text-slate-500 hover:bg-white/5 hover:text-white"
+              }`}
+            >
+              Admin Port
+            </button>
           </div>
 
-          {apiError ? (
-            <div className="mb-4">
-              <Alert variant="error">{apiError}</Alert>
+          <div className="p-10">
+            <div className="mb-10 text-center">
+              <div className="mx-auto mb-4 h-12 w-12 rounded-2xl bg-indigo-600 shadow-[0_0_30px_-5px_rgba(79,70,229,0.6)]" />
+              <h1 className="text-3xl font-black tracking-tighter text-white uppercase italic">
+                Library <span className="text-indigo-500">System</span>
+              </h1>
+              <p className="mt-2 text-sm font-medium text-slate-400">
+                {activeTab === "user" ? "Enter your member credentials" : "Management portal login"}
+              </p>
             </div>
-          ) : null}
 
-          <form onSubmit={onSubmit} className="space-y-4">
-            <Input label="User ID" name="userId" value={form.userId} onChange={onChange} error={errors.userId} />
-            <Input
-              label="Password"
-              name="password"
-              type="password"
-              value={form.password}
-              onChange={onChange}
-              error={errors.password}
-            />
+            {apiError ? (
+              <div className="mb-6">
+                <Alert variant="error">{apiError}</Alert>
+              </div>
+            ) : null}
 
-            <div className="flex items-center justify-between gap-3 pt-2">
-              <Button variant="secondary" onClick={() => setForm({ userId: "", password: "" })} disabled={loading}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={loading}>
-                {loading ? <Spinner label="Signing in" /> : "Confirm"}
-              </Button>
+            <form onSubmit={onSubmit} className="space-y-6">
+              <Input 
+                label={`${activeTab === "user" ? "User" : "Admin"} ID`} 
+                name="userId" 
+                placeholder={activeTab === "user" ? "user001" : "admin001"}
+                value={form.userId} 
+                onChange={onChange} 
+                error={errors.userId} 
+              />
+              <Input
+                label="Password"
+                name="password"
+                type="password"
+                placeholder="••••••••"
+                value={form.password}
+                onChange={onChange}
+                error={errors.password}
+              />
+
+              <div className="pt-4">
+                <Button 
+                  type="submit" 
+                  fullWidth
+                  variant="primary"
+                  className={activeTab === "admin" ? "bg-violet-600 shadow-[0_0_20px_-5px_rgba(139,92,246,0.6)] hover:bg-violet-500" : ""}
+                  disabled={loading}
+                >
+                  {loading ? <Spinner label="Authenticating" /> : "Secure Login"}
+                </Button>
+              </div>
+            </form>
+
+            <div className="mt-12 rounded-2xl border border-white/5 bg-white/5 p-5 backdrop-blur-sm">
+              <p className="mb-3 text-[10px] font-black uppercase tracking-widest text-slate-500">Demo Access</p>
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between text-xs font-medium">
+                  <span className="text-slate-400">Admin:</span>
+                  <code className="rounded-lg bg-white/10 px-2 py-1 text-indigo-300">admin001 / Admin@123</code>
+                </div>
+                <div className="flex items-center justify-between text-xs font-medium">
+                  <span className="text-slate-400">User:</span>
+                  <code className="rounded-lg bg-white/10 px-2 py-1 text-indigo-300">user001 / User@123</code>
+                </div>
+              </div>
             </div>
-          </form>
-
-          <div className="mt-6 rounded-xl bg-gray-50 p-3 text-xs text-gray-600">
-            <p className="font-semibold text-gray-800">Seed logins</p>
-            <p>Admin: admin001 / Admin@123</p>
-            <p>User: user001 / User@123</p>
           </div>
         </div>
       </div>
     </div>
   );
 };
+
 

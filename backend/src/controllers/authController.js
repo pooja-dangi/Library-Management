@@ -14,7 +14,18 @@ export const registerUser = async (req, res) => {
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { name, userId, password, role, isActive } = req.body;
+  const {
+    name,
+    userId,
+    password,
+    role,
+    isActive,
+    contact,
+    aadhaar,
+    startDate,
+    endDate,
+    membershipType,
+  } = req.body;
 
   try {
     const existing = await User.findOne({ userId });
@@ -28,6 +39,11 @@ export const registerUser = async (req, res) => {
       password,
       role: role || "user",
       isActive: isActive !== undefined ? isActive : true,
+      contact,
+      aadhaar,
+      startDate,
+      endDate,
+      membershipType,
     });
 
     res.status(201).json({

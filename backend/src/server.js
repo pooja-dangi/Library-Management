@@ -4,7 +4,6 @@ import cors from "cors";
 import morgan from "morgan";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
-import membershipRoutes from "./routes/membershipRoutes.js";
 import bookRoutes from "./routes/bookRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import transactionRoutes from "./routes/transactionRoutes.js";
@@ -25,7 +24,6 @@ connectDB();
 
 // Routes
 app.use("/api/auth", authRoutes);
-app.use("/api/memberships", membershipRoutes);
 app.use("/api/books", bookRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/transactions", transactionRoutes);

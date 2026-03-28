@@ -6,6 +6,7 @@ import {
   getMembershipById,
   getMemberships,
   updateMembership,
+  getNextMemberId, // Add this
 } from "../controllers/membershipController.js";
 import { adminOnly, protect } from "../middleware/authMiddleware.js";
 
@@ -27,6 +28,7 @@ const membershipValidation = [
 router.use(protect, adminOnly);
 
 router.get("/", getMemberships);
+router.get("/next-id", getNextMemberId); // Add before :id
 router.get("/:id", getMembershipById);
 router.post("/", membershipValidation, createMembership);
 router.put("/:id", membershipValidation, updateMembership);

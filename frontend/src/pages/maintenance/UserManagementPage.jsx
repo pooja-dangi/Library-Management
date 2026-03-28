@@ -25,12 +25,22 @@ export const UserManagementPage = () => {
     password: "",
     isActive: true,
     isAdmin: false,
+    contact: "",
+    aadhaar: "",
+    membershipType: "1_year",
+    startDate: new Date().toISOString().slice(0, 10),
+    endDate: "",
   });
 
   const [editUser, setEditUser] = useState({
     name: "",
     isActive: true,
     isAdmin: false,
+    contact: "",
+    aadhaar: "",
+    membershipType: "",
+    startDate: "",
+    endDate: "",
   });
 
   const selected = useMemo(() => rows.find((r) => r._id === selectedId) || null, [rows, selectedId]);
@@ -58,15 +68,45 @@ export const UserManagementPage = () => {
       name: selected.name || "",
       isActive: !!selected.isActive,
       isAdmin: selected.role === "admin",
+      contact: selected.contact || "",
+      aadhaar: selected.aadhaar || "",
+      membershipType: selected.membershipType || "1_year",
+      startDate: selected.startDate ? selected.startDate.slice(0, 10) : "",
+      endDate: selected.endDate ? selected.endDate.slice(0, 10) : "",
     });
     setErrors({});
   }, [selectedId]);
+
+  const calculateEndDate = (start, type) => {
+    if (!start || !type) return "";
+    const d = new Date(start);
+    if (type === "6_months") d.setMonth(d.getMonth() + 6);
+    else if (type === "1_year") d.setFullYear(d.getFullYear() + 1);
+    else if (type === "2_years") d.setFullYear(d.getFullYear() + 2);
+    return d.toISOString().slice(0, 10);
+  };
+
+  useEffect(() => {
+    if (newUser.startDate && newUser.membershipType) {
+      setNewUser((p) => ({ ...p, endDate: calculateEndDate(p.startDate, p.membershipType) }));
+    }
+  }, [newUser.startDate, newUser.membershipType]);
+
+  useEffect(() => {
+    if (editUser.startDate && editUser.membershipType) {
+      setEditUser((p) => ({ ...p, endDate: calculateEndDate(p.startDate, p.membershipType) }));
+    }
+  }, [editUser.startDate, editUser.membershipType]);
 
   const validateNew = () => {
     const next = {};
     if (!newUser.name.trim()) next.name = "Required";
     if (!newUser.userId.trim()) next.userId = "Required";
     if (!newUser.password || newUser.password.length < 6) next.password = "Min 6 characters";
+    if (!newUser.isAdmin) {
+      if (!newUser.contact.trim()) next.contact = "Required";
+      if (!newUser.aadhaar.trim()) next.aadhaar = "Required";
+    }
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -85,13 +125,14 @@ export const UserManagementPage = () => {
     try {
       setSaving(true);
       await http.post("/auth/register", {
-        name: newUser.name,
-        userId: newUser.userId,
-        password: newUser.password,
+        ...newUser,
         role: newUser.isAdmin ? "admin" : "user",
-        isActive: !!newUser.isActive,
       });
-      setNewUser({ name: "", userId: "", password: "", isActive: true, isAdmin: false });
+      setNewUser({ 
+        name: "", userId: "", password: "", isActive: true, isAdmin: false,
+        contact: "", aadhaar: "", membershipType: "1_year", 
+        startDate: new Date().toISOString().slice(0, 10), endDate: "" 
+      });
     } catch (err) {
       setApiError(getApiErrorMessage(err));
     } finally {
@@ -107,8 +148,7 @@ export const UserManagementPage = () => {
     try {
       setSaving(true);
       await http.put(`/users/${selectedId}`, {
-        name: editUser.name,
-        isActive: !!editUser.isActive,
+        ...editUser,
         role: editUser.isAdmin ? "admin" : "user",
       });
       await load();
@@ -180,6 +220,28 @@ export const UserManagementPage = () => {
               <Checkbox label="Active" checked={newUser.isActive} onChange={(e) => setNewUser((p) => ({ ...p, isActive: e.target.checked }))} />
               <Checkbox label="Admin" checked={newUser.isAdmin} onChange={(e) => setNewUser((p) => ({ ...p, isAdmin: e.target.checked }))} />
             </div>
+
+            {!newUser.isAdmin && (
+              <div className="grid gap-4 pt-2 md:grid-cols-2">
+                <Input label="Contact" name="contact" value={newUser.contact} onChange={(e) => setNewUser((p) => ({ ...p, contact: e.target.value }))} error={errors.contact} />
+                <Input label="Aadhaar" name="aadhaar" value={newUser.aadhaar} onChange={(e) => setNewUser((p) => ({ ...p, aadhaar: e.target.value }))} error={errors.aadhaar} />
+                <Select
+                  label="Membership"
+                  name="membershipType"
+                  value={newUser.membershipType}
+                  onChange={(e) => setNewUser((p) => ({ ...p, membershipType: e.target.value }))}
+                  options={[
+                    { value: "6_months", label: "6 Months" },
+                    { value: "1_year", label: "1 Year" },
+                    { value: "2_years", label: "2 Years" },
+                  ]}
+                />
+                <div className="grid grid-cols-2 gap-2">
+                  <Input label="Start Date" name="startDate" type="date" value={newUser.startDate} onChange={(e) => setNewUser((p) => ({ ...p, startDate: e.target.value }))} />
+                  <Input label="End Date" name="endDate" type="date" value={newUser.endDate} disabled />
+                </div>
+              </div>
+            )}
             <div className="flex items-center justify-between gap-3 pt-2">
               <Button variant="secondary" disabled={saving} onClick={() => setNewUser({ name: "", userId: "", password: "", isActive: true, isAdmin: false })}>
                 Cancel
@@ -203,6 +265,28 @@ export const UserManagementPage = () => {
                 <Checkbox label="Active" checked={editUser.isActive} onChange={(e) => setEditUser((p) => ({ ...p, isActive: e.target.checked }))} />
                 <Checkbox label="Admin" checked={editUser.isAdmin} onChange={(e) => setEditUser((p) => ({ ...p, isAdmin: e.target.checked }))} />
               </div>
+
+              {!editUser.isAdmin && (
+                <div className="grid gap-4 pt-2 md:grid-cols-2">
+                  <Input label="Contact" name="contact" value={editUser.contact} onChange={(e) => setEditUser((p) => ({ ...p, contact: e.target.value }))} error={errors.contact} />
+                  <Input label="Aadhaar" name="aadhaar" value={editUser.aadhaar} onChange={(e) => setEditUser((p) => ({ ...p, aadhaar: e.target.value }))} error={errors.aadhaar} />
+                  <Select
+                    label="Membership"
+                    name="membershipType"
+                    value={editUser.membershipType}
+                    onChange={(e) => setEditUser((p) => ({ ...p, membershipType: e.target.value }))}
+                    options={[
+                      { value: "6_months", label: "6 Months" },
+                      { value: "1_year", label: "1 Year" },
+                      { value: "2_years", label: "2 Years" },
+                    ]}
+                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input label="Start Date" name="startDate" type="date" value={editUser.startDate} onChange={(e) => setEditUser((p) => ({ ...p, startDate: e.target.value }))} />
+                    <Input label="End Date" name="endDate" type="date" value={editUser.endDate} disabled />
+                  </div>
+                </div>
+              )}
               <div className="flex items-center justify-between gap-3 pt-2">
                 <Button variant="secondary" disabled={saving} onClick={() => setSelectedId("")}>
                   Cancel

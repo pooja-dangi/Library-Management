@@ -81,7 +81,7 @@ Frontend runs on `http://localhost:5173`.
 - **Memberships** (admin)
   - `GET/POST /api/memberships`
   - `PUT/DELETE /api/memberships/:id`
-- **Books/Movies**
+- **Books**
   - `GET /api/books` (admin + user)
   - `POST/PUT/DELETE /api/books` (admin)
 - **Users** (admin)
@@ -94,7 +94,6 @@ Frontend runs on `http://localhost:5173`.
   - `POST /api/transactions/payfine`
 - **Reports**
   - `GET /api/reports/master/books`
-  - `GET /api/reports/master/movies`
   - `GET /api/reports/master/memberships`
   - `GET /api/reports/active-issues`
   - `GET /api/reports/overdue-returns`

@@ -10,7 +10,6 @@ import { getApiErrorMessage } from "../../utils/errors.js";
 
 const reportOptions = [
   { value: "master_books", label: "Master List of Books" },
-  { value: "master_movies", label: "Master List of Movies" },
   { value: "master_memberships", label: "Master List of Memberships" },
   { value: "active_issues", label: "Active Issues" },
   { value: "overdue_returns", label: "Overdue Returns" },
@@ -19,7 +18,6 @@ const reportOptions = [
 
 const endpointByKey = {
   master_books: "/reports/master/books",
-  master_movies: "/reports/master/movies",
   master_memberships: "/reports/master/memberships",
   active_issues: "/reports/active-issues",
   overdue_returns: "/reports/overdue-returns",
@@ -36,6 +34,7 @@ export const ReportsHome = () => {
     setApiError("");
     try {
       setLoading(true);
+      setRows([]); // Clear current rows to avoid mismatched data
       const { data } = await http.get(endpointByKey[reportKey]);
       setRows(data);
     } catch (e) {
@@ -47,10 +46,10 @@ export const ReportsHome = () => {
 
   useEffect(() => {
     load();
-  }, []);
+  }, [reportKey]);
 
   const columns = useMemo(() => {
-    if (reportKey === "master_books" || reportKey === "master_movies") {
+    if (reportKey === "master_books") {
       return [
         { key: "name", header: "Name" },
         { key: "author", header: "Author" },
@@ -77,7 +76,7 @@ export const ReportsHome = () => {
       { key: "book", header: "Book", cell: (r) => r.bookId?.name || "" },
       { key: "author", header: "Author", cell: (r) => r.bookId?.author || "" },
       { key: "serial", header: "Serial No", cell: (r) => r.bookId?.serialNumber || "" },
-      { key: "user", header: "User", cell: (r) => r.userId?.userId || "" },
+      { key: "member", header: "Member (User ID)", cell: (r) => r.userId ? `${r.userId.name} (${r.userId.userId})` : "" },
       { key: "issueDate", header: "Issue Date", cell: (r) => (r.issueDate ? r.issueDate.slice(0, 10) : "") },
       { key: "returnDate", header: "Return Date", cell: (r) => (r.returnDate ? r.returnDate.slice(0, 10) : "") },
       { key: "actualReturnDate", header: "Actual Return", cell: (r) => (r.actualReturnDate ? r.actualReturnDate.slice(0, 10) : "") },
@@ -90,8 +89,8 @@ export const ReportsHome = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-gray-900">Reports</h1>
-        <p className="mt-1 text-sm text-gray-600">All reports are live from MongoDB.</p>
+        <h1 className="text-2xl font-bold text-white">Reports</h1>
+        <p className="mt-1 text-sm text-slate-400">All reports are live from MongoDB.</p>
       </div>
 
       {apiError ? <Alert variant="error">{apiError}</Alert> : null}
@@ -110,7 +109,7 @@ export const ReportsHome = () => {
               />
             </div>
             <Button onClick={load} disabled={loading}>
-              {loading ? <Spinner label="Loading" /> : "Confirm"}
+              {loading ? <Spinner label="Loading" /> : "Refresh"}
             </Button>
           </div>
         }
